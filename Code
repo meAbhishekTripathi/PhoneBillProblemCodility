@@ -1,0 +1,91 @@
+import UIKit
+
+let phoneLog = "00:01:07,400-234-090" + "\n" + "00:05:01,701-080-080" + "\n" + "00:05:00,400-234-090"
+//func totalCost(logs:String) -> Int{
+        
+    //Split the phone logs into seprate component of array
+    let logsArray = phoneLog.components(separatedBy: "\n")
+   // print(logsArray)
+    
+    //Create a dict to store phone number and total call of that phone number
+    var phoneNumberDetail : [String:Int] = [:]
+logsArray.forEach { record in
+    let detailsArray  : [String?]  = record.components(separatedBy: ",")
+    var durationInHours = 0
+    if let substring = detailsArray[0]?.prefix(2),let hours = Int(substring){
+        durationInHours = hours * 3600
+    }else{
+        //return
+    }
+    var durationInMinutes = 0
+    if (detailsArray[0]?.count ?? 0) >= 5,let substring = Int(detailsArray[0]?.dropFirst(3).prefix(2) ?? ""){
+        durationInMinutes = substring * 60
+    }else{
+        // return
+    }
+    
+    var durationInSeconds = 0
+    if (detailsArray[0]?.count ?? 0) >= 8,let substring = Int(detailsArray[0]?.dropFirst(6).prefix(2) ?? ""){
+        durationInSeconds = substring
+    }else{
+        // return
+    }
+    var totalDuration = durationInHours + durationInMinutes + durationInSeconds
+    
+    //IF we have an entry for this phone number then add the total duration in existing one other wise add as it is.
+    if phoneNumberDetail.keys.contains(detailsArray[1] ?? ""){
+        if let existingDuration = phoneNumberDetail[detailsArray[1] ?? ""]{
+            totalDuration += existingDuration
+        }
+        phoneNumberDetail[detailsArray[1] ?? ""] = totalDuration
+        
+    }else{
+        phoneNumberDetail[detailsArray[1] ?? ""] = totalDuration
+    }
+}
+        //Now find the phone call with the max duration as we have dict with all calculated value along with phone
+        var maxDuration = 0
+        var maxPhonValue = 0
+        var maxPhonenumberString = ""
+        for (phoneEntry,durationTime) in phoneNumberDetail{
+            if durationTime > maxDuration{
+                maxPhonenumberString = phoneEntry
+                maxPhonValue  = Int(phoneEntry.replacingOccurrences(of: "-", with: "*")) ?? 0
+                maxDuration = durationTime
+            }else{
+                if durationTime == maxDuration{
+                    if let replacedValue = Int(phoneEntry.replacingOccurrences(of: "-", with: "*")) , replacedValue < maxPhonValue{
+                        maxPhonenumberString = phoneEntry
+                        maxPhonValue = replacedValue
+                    }
+                }
+            }
+        }
+        
+        var totalCost = 0
+for (phoneEntry,durationTime) in phoneNumberDetail{
+    guard phoneEntry != maxPhonenumberString else{
+        continue
+    }
+    //Case : 2 if duration is greater than 300
+    if durationTime > 300{
+        
+        totalCost += (durationTime / 60) * 150
+        if durationTime % 60 != 0{
+            totalCost += 150
+        }
+        
+    }else{
+        //Case : 1 if duration is less than 5 minutes then it will charge 3 cent per sec
+            totalCost += durationTime * 3
+    }
+}
+
+print(totalCost)
+ 
+
+
+
+
+  //  return 0
+//}
